@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const user = await User.create({
     email,
     password: hashedPassword,
+    role: "user",
   });
 
   const token = jwt.sign(

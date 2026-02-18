@@ -10,28 +10,42 @@ export async function POST(req: Request) {
 
     const { email, password } = await req.json();
 
+   
+
     const user = await User.findOne({ email });
     if (!user) {
-      return NextResponse.json({ error: "Invalid" }, { status: 400 });
+      console.log("EMAIL:", email);
+      console.log("USER:", user);
+      console.log("HASHED PASSWORD:", user?.password);
+      return NextResponse.json({ error: "Invalid User" }, { status: 400 });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return NextResponse.json({ error: "Invalid" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid password" }, { status: 400 });
     }
-
+    console.log("COMPARE RESULT:", isMatch);
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" }
     );
 
-    const response = NextResponse.json({ message: "Logged in" });
+    const response = NextResponse.json(
+      { message: "Logged in" },
+      { status: 200 }
+    );
 
-    response.cookies.set("token", token, {
+    response.cookies.set({
+      name: "token",
+      value: token,
       httpOnly: true,
+      secure: true,      // 중요
+      sameSite: "lax",
       path: "/",
     });
+
+    
 
     return response;
 
@@ -39,3 +53,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
