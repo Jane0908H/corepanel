@@ -1,27 +1,33 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
+
   const { pathname } = request.nextUrl;
 
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/api/login") ||
-    pathname.startsWith("/api/register") ||
-    pathname.startsWith("/api/logout")
-  ) {
+  // 보호할 경로
+  const protectedRoutes = ["/dashboard"];
+
+  const isProtected = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (!isProtected) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  return NextResponse.next();
+  try {
+    jwt.verify(token, process.env.JWT_SECRET as string);
+    return NextResponse.next();
+  } catch (err) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 }
 
 export const config = {

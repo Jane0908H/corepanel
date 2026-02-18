@@ -13,11 +13,11 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
+  const [newTitle, setNewTitle] = useState("");
 
   useEffect(() => {
     async function loadData() {
       try {
-        // ✅ 쿠키 포함해서 요청
         const taskRes = await fetch("/api/tasks", {
           credentials: "include",
         });
@@ -39,7 +39,6 @@ export default function DashboardPage() {
           const userData = await userRes.json();
           setUserEmail(userData.email);
         }
-
       } catch (err) {
         console.error("Dashboard load error:", err);
       } finally {
@@ -49,6 +48,38 @@ export default function DashboardPage() {
 
     loadData();
   }, []);
+
+  async function handleCreate() {
+    if (!newTitle) return;
+
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: newTitle,
+        status: "todo",
+        priority: "medium",
+      }),
+    });
+
+    if (res.ok) {
+      const created = await res.json();
+      setTasks((prev) => [...prev, created]);
+      setNewTitle("");
+    }
+  }
+
+  async function handleDelete(id: string) {
+    await fetch("/api/tasks", {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    setTasks((prev) => prev.filter((task) => task._id !== id));
+  }
 
   async function handleLogout() {
     await fetch("/api/logout", {
@@ -87,10 +118,41 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* Create Task */}
+      <div className="mb-6 flex gap-2">
+        <input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="New task..."
+          className="px-4 py-2 bg-gray-800 border border-gray-700 rounded w-64"
+        />
+        <button
+          onClick={handleCreate}
+          className="px-4 py-2 bg-blue-600 rounded"
+        >
+          Add
+        </button>
+      </div>
+
       <div className="grid md:grid-cols-3 gap-6">
-        <Column title="Todo" status="todo" tasks={tasks} />
-        <Column title="In Progress" status="doing" tasks={tasks} />
-        <Column title="Done" status="done" tasks={tasks} />
+        <Column
+          title="Todo"
+          status="todo"
+          tasks={tasks}
+          onDelete={handleDelete}
+        />
+        <Column
+          title="In Progress"
+          status="doing"
+          tasks={tasks}
+          onDelete={handleDelete}
+        />
+        <Column
+          title="Done"
+          status="done"
+          tasks={tasks}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );
@@ -100,10 +162,12 @@ function Column({
   title,
   status,
   tasks,
+  onDelete,
 }: {
   title: string;
   status: "todo" | "doing" | "done";
   tasks: Task[];
+  onDelete: (id: string) => void;
 }) {
   const filtered = tasks.filter((task) => task.status === status);
 
@@ -119,12 +183,12 @@ function Column({
         {filtered.map((task) => (
           <div
             key={task._id}
-            className="bg-gray-800 p-4 rounded border border-gray-700"
+            className="bg-gray-800 p-4 rounded border border-gray-700 flex justify-between items-center"
           >
-            <div className="flex justify-between items-center">
+            <div>
               <span>{task.title}</span>
               <span
-                className={`text-xs px-2 py-1 rounded ${
+                className={`ml-2 text-xs px-2 py-1 rounded ${
                   task.priority === "high"
                     ? "bg-red-600"
                     : task.priority === "medium"
@@ -135,6 +199,13 @@ function Column({
                 {task.priority}
               </span>
             </div>
+
+            <button
+              onClick={() => onDelete(task._id)}
+              className="text-red-400 text-xs"
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>

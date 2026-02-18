@@ -22,10 +22,10 @@ export async function GET() {
       process.env.JWT_SECRET as string
     );
 
-    
     const tasks = await Task.find({
-      user: decoded.user,
+      user: decoded.userId,   
     });
+
 
     return NextResponse.json(tasks);
 
@@ -37,3 +37,60 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(req: Request) {
+  await connectDB();
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+     
+
+  const decoded: any = jwt.verify(
+    token,
+    process.env.JWT_SECRET as string
+  );
+
+  const { title, status, priority } = await req.json();
+
+  const task = await Task.create({
+    title,
+    status,
+    priority,
+    user: decoded.userId,
+  });
+
+  return NextResponse.json(task);
+}
+
+
+export async function DELETE(req: Request) {
+  await connectDB();
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const decoded: any = jwt.verify(
+    token,
+    process.env.JWT_SECRET as string
+  );
+
+  const { id } = await req.json();
+
+  await Task.findOneAndDelete({
+    _id: id,
+    user: decoded.userId,
+  });
+
+  return NextResponse.json({ message: "Deleted" });
+}
+
