@@ -2,15 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    fetch("/api/me", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setRole(data.role));
+  }, []);
 
   const menu = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "Projects", href: "#" },
     { name: "Settings", href: "#" },
   ];
+
+  if (role === "admin") {
+    menu.push({ name: "Admin Panel", href: "/admin" });
+  }
 
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 p-6">

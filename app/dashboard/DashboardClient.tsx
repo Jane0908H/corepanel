@@ -13,7 +13,6 @@ interface Task {
   _id: string;
   title: string;
   status: "todo" | "doing" | "done";
-  priority: "low" | "medium" | "high";
 }
 
 export default function DashboardClient() {
@@ -30,6 +29,7 @@ export default function DashboardClient() {
     const res = await fetch("/api/tasks", {
       credentials: "include",
     });
+
     if (res.ok) {
       const data = await res.json();
       setTasks(data);
@@ -46,26 +46,25 @@ export default function DashboardClient() {
       body: JSON.stringify({
         title: newTitle,
         status: "todo",
-        priority: "medium",
       }),
     });
 
     if (res.ok) {
-        const created = await res.json();
-        setTasks((prev) => [...prev, created]);
-        setNewTitle("");
-        toast.success("Task created successfully");
+      const created = await res.json();
+      setTasks((prev) => [...prev, created]);
+      setNewTitle("");
+      toast.success("Task created");
     } else {
-        toast.error("Failed to create task");
+      toast.error("Failed to create task");
     }
   }
 
   async function handleDelete(id: string) {
     await fetch("/api/tasks", {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
     });
 
     setTasks((prev) => prev.filter((task) => task._id !== id));
@@ -89,57 +88,84 @@ export default function DashboardClient() {
   }
 
   async function handleDragEnd(result: DropResult) {
-    if (!result.destination) return;
+    const { source, destination } = result;
 
-    const { draggableId, destination } = result;
+    if (!destination) return;
+
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+
+    const sourceTasks = tasks.filter(
+      (task) => task.status === source.droppableId
+    );
+
+    const destinationTasks = tasks.filter(
+      (task) => task.status === destination.droppableId
+    );
+
+    const movedTask = sourceTasks[source.index];
+    if (!movedTask) return;
+
+    sourceTasks.splice(source.index, 1);
+
+    movedTask.status = destination.droppableId as any;
+
+    destinationTasks.splice(destination.index, 0, movedTask);
+
+    const otherTasks = tasks.filter(
+      (task) =>
+        task.status !== source.droppableId &&
+        task.status !== destination.droppableId
+    );
+
+    const newTasks = [
+      ...otherTasks,
+      ...sourceTasks,
+      ...destinationTasks,
+    ];
+
+    setTasks(newTasks);
 
     await fetch("/api/tasks", {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: draggableId,
-        status: destination.droppableId,
+        id: movedTask._id,
+        status: movedTask.status,
       }),
     });
-
-    setTasks((prev) =>
-      prev.map((t) =>
-        t._id === draggableId
-          ? { ...t, status: destination.droppableId as any }
-          : t
-      )
-    );
   }
 
   const columns = [
-    { id: "todo", title: "Todo" },
+    { id: "todo", title: "To Do" },
     { id: "doing", title: "In Progress" },
-    { id: "done", title: "Done" },
+    { id: "done", title: "Completed" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white p-10">
-      <div className="mb-12">
-        <h1 className="text-5xl font-bold tracking-tight">
-          CorePanel
-        </h1>
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold">Task Board</h1>
         <p className="text-gray-400 mt-2">
-          Production-ready SaaS Admin System
+          Drag tasks between columns to update status
         </p>
       </div>
 
-      {/* Create Task */}
-      <div className="mb-10 flex gap-3">
+      <div className="mb-8 flex gap-3">
         <input
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
-          placeholder="Add a new task..."
-          className="px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Enter task title..."
+          className="px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={handleCreate}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition"
         >
           Add Task
         </button>
@@ -153,17 +179,11 @@ export default function DashboardClient() {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="bg-gray-900/70 backdrop-blur-md border border-gray-800 rounded-2xl p-6 min-h-[400px] shadow-xl"
+                  className="bg-gray-900 border border-gray-800 rounded-2xl p-6 min-h-[400px]"
                 >
                   <h2 className="text-xl font-semibold mb-6">
                     {col.title}
                   </h2>
-
-                  {tasks.filter((t) => t.status === col.id).length === 0 && (
-                    <div className="text-gray-500 text-sm text-center py-10">
-                      No tasks yet.
-                    </div>
-                  )}
 
                   {tasks
                     .filter((task) => task.status === col.id)
@@ -178,7 +198,7 @@ export default function DashboardClient() {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className="bg-gray-800 p-4 rounded-xl mb-4 shadow-md hover:shadow-lg transition-all duration-200 border border-gray-700"
+                            className="bg-gray-800 p-4 rounded-xl mb-4 border border-gray-700 hover:shadow-lg transition"
                           >
                             {editingId === task._id ? (
                               <div className="flex gap-2">
@@ -200,26 +220,22 @@ export default function DashboardClient() {
                               </div>
                             ) : (
                               <div className="flex justify-between items-center">
-                                <span className="font-medium">
-                                  {task.title}
-                                </span>
-
+                                <span>{task.title}</span>
                                 <div className="flex gap-3 text-sm">
                                   <button
                                     onClick={() => {
                                       setEditingId(task._id);
                                       setEditingText(task.title);
                                     }}
-                                    className="text-yellow-400 hover:opacity-80 transition"
+                                    className="text-yellow-400"
                                   >
                                     Edit
                                   </button>
-
                                   <button
                                     onClick={() =>
                                       handleDelete(task._id)
                                     }
-                                    className="text-red-400 hover:opacity-80 transition"
+                                    className="text-red-400"
                                   >
                                     Delete
                                   </button>

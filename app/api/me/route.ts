@@ -21,9 +21,14 @@ export async function GET(req: Request) {
 
     const user = await User.findById(decoded.userId).select("-password");
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      email: user.email,
+      role: user.role,
+    });
 
   } catch (error) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
+
+  
 }
