@@ -22,6 +22,7 @@ export async function GET() {
       process.env.JWT_SECRET as string
     );
 
+    
     const tasks = await Task.find({
       user: decoded.user,
     });
