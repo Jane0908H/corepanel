@@ -1,65 +1,167 @@
-import Image from "next/image";
+"use client";
+
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+    <main className="bg-gray-950 text-white">
+
+      {/* HERO */}
+      <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <h1 className="text-5xl md:text-6xl font-bold mb-6">
+          CorePanel
+        </h1>
+
+        <h2 className="text-xl md:text-2xl text-gray-300 mb-6 max-w-2xl">
+          Secure Internal Management for Modern Small Businesses
+        </h2>
+
+        <p className="text-gray-400 max-w-xl mb-8">
+          Replace messy spreadsheets with a clean, secure internal dashboard built for your workflow.
+        </p>
+
+        <div className="flex gap-4">
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/login"
+            className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+            View Live Demo
           </a>
+
           <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:your@email.com"
+            className="px-6 py-3 border border-gray-600 rounded-lg hover:border-white transition"
           >
-            Documentation
+            Request Custom Setup
           </a>
         </div>
-      </main>
+      </section>
+
+      {/* FEATURES */}
+      <section className="py-20 px-6 max-w-6xl mx-auto">
+        <h3 className="text-3xl font-bold text-center mb-12">
+          Why CorePanel?
+        </h3>
+
+        <div className="grid md:grid-cols-3 gap-8">
+
+          {/* Feature 1 */}
+          <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+            <h4 className="text-xl font-semibold mb-4">
+              Secure Authentication
+            </h4>
+            <p className="text-gray-400">
+              Built-in JWT authentication and protected routes ensure your internal data stays safe.
+            </p>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+            <h4 className="text-xl font-semibold mb-4">
+              Custom Workflow
+            </h4>
+            <p className="text-gray-400">
+              Adapt the dashboard to match your team’s workflow — tasks, clients, projects, and more.
+            </p>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+            <h4 className="text-xl font-semibold mb-4">
+              Replace Spreadsheets
+            </h4>
+            <p className="text-gray-400">
+              Move away from messy spreadsheets and manage everything in one clean, organized system.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  );
+}
+
+function Feature({ title, description }: any) {
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:scale-[1.03] transition-all duration-200 shadow-lg">
+      <h4 className="text-xl font-semibold mb-4">{title}</h4>
+      <p className="text-gray-400">{description}</p>
+
+            {/* WHO IS THIS FOR */}
+      <section className="py-20 px-6 bg-gray-900">
+        <div className="max-w-6xl mx-auto text-center">
+          
+          <h3 className="text-3xl font-bold mb-12">
+            Who is CorePanel for?
+          </h3>
+
+          <div className="grid md:grid-cols-3 gap-8">
+
+            <div className="bg-gray-950 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+              <h4 className="text-xl font-semibold mb-4">
+                Small Agencies
+              </h4>
+              <p className="text-gray-400">
+                Manage clients, tasks, and internal projects from one secure dashboard.
+              </p>
+            </div>
+
+            <div className="bg-gray-950 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+              <h4 className="text-xl font-semibold mb-4">
+                Service Businesses
+              </h4>
+              <p className="text-gray-400">
+                Track operations, appointments, and workflows without messy spreadsheets.
+              </p>
+            </div>
+
+            <div className="bg-gray-950 p-8 rounded-2xl border border-gray-800 hover:border-gray-600 transition">
+              <h4 className="text-xl font-semibold mb-4">
+                Growing Teams
+              </h4>
+              <p className="text-gray-400">
+                Scale your internal system as your team grows.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    
+  );
+}
+
+function PricingCard({
+  title,
+  price,
+  features,
+  highlight,
+}: any) {
+  return (
+    <div
+      className={`rounded-2xl p-8 border ${
+        highlight
+          ? "border-blue-500 scale-105"
+          : "border-gray-800"
+      } transition-all duration-200 shadow-lg bg-gray-900`}
+    >
+      <h4 className="text-xl font-bold mb-4">{title}</h4>
+      <p className="text-3xl font-bold mb-6">{price}</p>
+
+      <ul className="space-y-2 text-sm text-gray-400">
+        {features.map((f: string, i: number) => (
+          <li key={i}>✓ {f}</li>
+        ))}
+      </ul>
+
+      <button className="mt-6 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded transition">
+        Choose Plan
+      </button>
     </div>
   );
 }
